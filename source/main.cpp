@@ -1,9 +1,10 @@
-#include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <algorithm>
 #include <new>
 #include <gccore.h>
+#include <sys/param.h>  // MAXPATHLEN devkit r29+
 #include <wiiuse/wpad.h>
 #include <dirent.h>
 #include <fat.h>
@@ -96,19 +97,19 @@ bool DirExist(const char *path)
 	return false;
 }
 
-void CreateCache(const char *name, int indent, bool compress, bool usb)
+void CreateCache(const char *name, int indent, bool compress, bool skip, bool usb)
 {
 	int i = 0, count = 0;
 	u8 textureFmt = compress ? GX_TF_CMPR : GX_TF_RGB565;
 
-    DIR *dir = NULL;
-    struct dirent *entry = NULL;
+	DIR *dir = NULL;
+	struct dirent *entry = NULL;
 
-    if (!(dir = opendir(name)))
+	if (!(dir = opendir(name)))
 	{
 		printf("\nError opening %s", name);
 		sleep(5);
-        return;
+		return;
 	}
 
     while ((entry = readdir(dir)) != NULL) {
@@ -149,11 +150,11 @@ void CreateCache(const char *name, int indent, bool compress, bool usb)
 
 			free(cachepath);
 
-            CreateCache(path, indent + 2, compress, usb);
+			CreateCache(path, indent + 2, compress, skip, usb);
         }
 		else // Files : create cache files.
 		{
-            snprintf(path, sizeof(path), "%s/%s", name, entry->d_name);
+			snprintf(path, sizeof(path), "%s/%s", name, entry->d_name);
 
 			// Checks for /wiiflow/boxcovers root folder (Wii covers). Count > 1 means subdirectory ie. plugins'covers 
 			count = 0;
@@ -164,7 +165,7 @@ void CreateCache(const char *name, int indent, bool compress, bool usb)
 			}
 			
 			// Skips cache creation if we're in /wiiflow/boxcovers only
-			if(count <= 1)
+			if(skip && count <= 1)
 			{
 				continue;
 				//printf("Root, Wii cover : skip it!\n");
@@ -236,23 +237,23 @@ void CreateCache(const char *name, int indent, bool compress, bool usb)
 						free(fullpath);
 				}
 			}
-        }
-    }
-    closedir(dir);
+		}
+	}
+	closedir(dir);
 }
 
 void format_elapsed_time(char *time_str, double elapsed) {
-    int h, m, s, ms;
+	int h, m, s, ms;
 
-    h = m = s = ms = 0;
-    ms = elapsed * 1000; // promote the fractional part to milliseconds
-    h = ms / 3600000;
-    ms -= (h * 3600000);
-    m = ms / 60000;
-    ms -= (m * 60000);
-    s = ms / 1000;
-    ms -= (s * 1000);
-    sprintf(time_str, "%02ih:%02im:%02is", h, m, s);
+	h = m = s = ms = 0;
+	ms = elapsed * 1000; // promote the fractional part to milliseconds
+	h = ms / 3600000;
+	ms -= (h * 3600000);
+	m = ms / 60000;
+	ms -= (m * 60000);
+	s = ms / 1000;
+	ms -= (s * 1000);
+	sprintf(time_str, "%02ih:%02im:%02is", h, m, s);
 }
 
 //---------------------------------------------------------------------------------
@@ -302,6 +303,7 @@ int main(int argc, char **argv) {
 		int i = 0;
 		bool compressTex = true;
 		bool isUSB = false;
+		bool skipWii = true;
 
 		while(!done)
 		{
@@ -310,9 +312,10 @@ int main(int argc, char **argv) {
 			printf("\x1b[5;1HThis homebrew creates .wfc files for WiiFlow. (plugins only!)\n");
 			printf("\x1b[6;1HScanning the boxcovers and converting them take a long time.\n");
 
-			printf("\x1b[12;1H");
-			printf("\n %sCompress Textures : << %s >>\n", i ? " " : ">", compressTex ? "Yes" : "No");
-			printf("\n %sCovers directory  : << %s >>\n", i ? ">" : " ", isUSB ? "USB" : "SD");
+			printf("\x1b[11;1H");
+			printf("\n%s Compress Textures   : << %s >>\n", i ? " " : ">", compressTex ? "YES" : "NO");
+			printf("\n%s Covers directory    : << %s >>\n", (i == 1) ? ">" : " ", isUSB ? "USB" : "SD");
+			printf("\n%s Skip Wii/GC covers  : << %s >>\n", (i == 2) ? ">" : " ", skipWii ? "YES" : "NO");
 
 			printf("\x1b[24;0HUp/Down    : Select option.\n");
 			printf("\x1b[25;0HLeft/Right : Modify option.\n");
@@ -344,6 +347,10 @@ int main(int argc, char **argv) {
 				{
 					isUSB = !isUSB;
 				}
+				else if(i==2)
+				{
+					skipWii = !skipWii;
+				}
 			}
 			else if(btnsGC & PAD_BUTTON_START || btnsWii & WPAD_BUTTON_PLUS)
 			{
@@ -358,7 +365,7 @@ int main(int argc, char **argv) {
 				Quit();
 			}
 
-			if(i>1 || i<0)
+			if(i>2 || i<0)
 				i=0;
 		}
 
@@ -393,19 +400,19 @@ int main(int argc, char **argv) {
 		// Clear screen
 		ClearScreen();
 
-        printf("The cache creation will begin shortly. Press Home/Start to cancel at any time.\n");
+		printf("The cache creation will begin shortly. Press Home/Start to cancel at any time.\n");
 		sleep(6);
 
 		// Create log file
 		sprintf(logfile, "%s:/log_cachecreate.txt",  isUSB ? "usb" : "sd");
 		FILE *log;
-    	log = fopen(logfile, "wb");
-    	if (log == NULL)
-    	{
+		log = fopen(logfile, "wb");
+		if (log == NULL)
+		{
 			ClearScreen();
-        	printf("Error! can't open log file %s\n", logfile);
+			printf("Error! can't open log file %s\n", logfile);
 			sleep(3);
-    	}
+		}
 		fclose(log);
 
 		// Timer to estimate duration
@@ -413,7 +420,7 @@ int main(int argc, char **argv) {
 		t0 = time(NULL);
 
 		// Start browsing boxcovers and creating cache files
-    	CreateCache(".", 0, compressTex, isUSB);
+		CreateCache(".", 0, compressTex, skipWii, isUSB);
 
 		// Get and Display elapsed time
 		t1 = time(NULL);
@@ -426,16 +433,16 @@ int main(int argc, char **argv) {
 		printf("It took about %s\n", Timetxt);
 
 		// Append elapsed time to log file
-    	log = fopen(logfile, "a");
-    	if (log == NULL)
-    	{
+		log = fopen(logfile, "a");
+		if (log == NULL)
+		{
 			ClearScreen();
-        	printf("Error! can't open log file %s\n", logfile);
+			printf("Error! can't open log file %s\n", logfile);
 			sleep(3);
-    	}
+		}
 		else
 		{
-    		fprintf(log, "Cache generated in  %s\n", Timetxt);
+			fprintf(log, "Cache generated in  %s\n", Timetxt);
 		}
 		fclose(log);
 

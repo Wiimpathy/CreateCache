@@ -1,16 +1,11 @@
+#include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <stdio.h>
 #include <ogcsys.h>
+#include <sys/param.h> // MAXPATHLEN devkit r29+
 #include <algorithm>
 #include <malloc.h>
 #include <cmath>
-
-#include "texture.hpp"
-#include <string.h>
-#include <stdio.h>
-#include <ogcsys.h>
-#include <unistd.h>
 
 #include "texture.hpp"
 #include "pngu.h"
@@ -54,7 +49,8 @@ void fsop_ReadFileLoc(const char *path, const u32 size, void *loc)
 u8 *fsop_ReadFile(const char *path, u32 *size)
 {
 	*(size) = 0;
-	u32 filesize = 0;
+	size_t filesize = 0;
+
 	u8 *mem = NULL;
 	fsop_GetFileSizeBytes(path, &filesize);
 	if(filesize > 0)
@@ -260,13 +256,13 @@ TexErr STexture::fromImageFile(TexData &dest, const char *filename, u8 f, u32 mi
 
 	// Open log file and append any errors
 	FILE *log = NULL;
-    log = fopen(logfile, "a");
+	log = fopen(logfile, "a");
 
-    if (log == NULL)
-    {
+	if (log == NULL)
+	{
 		printf("fromImageFile Error! can't open log file %s.\n", logfile);
 		fclose(log);
-    }
+	}
 
 	u32 fileSize = 0;
 	u8 *Image = NULL;
@@ -282,7 +278,7 @@ TexErr STexture::fromImageFile(TexData &dest, const char *filename, u8 f, u32 mi
 	if(Image == NULL)
 	{
 		printf("Error opening %s!\n", filename);
-    	fprintf(log, "Error opening %s!\n", filename);
+		fprintf(log, "Error opening %s!\n", filename);
 		fclose(log);
 		return TE_ERROR;
 	}
@@ -298,8 +294,8 @@ TexErr STexture::fromImageFile(TexData &dest, const char *filename, u8 f, u32 mi
 	// error : Write our log file
 	if(result)
 	{
-    	fprintf(log, "Error converting %s\n", filename);
-    	fprintf(log, "%s\n", buferror);
+		fprintf(log, "Error converting %s\n", filename);
+		fprintf(log, "%s\n", buferror);
 	}
 	fclose(log);
 

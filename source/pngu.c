@@ -10,6 +10,7 @@ More info : http://frontier-dev.net
 #include <stdlib.h>
 #include <stdio.h>
 #include <malloc.h>
+#include <string.h>
 #include "pngu.h"
 #include <png.h>
 
@@ -1019,6 +1020,11 @@ int pngu_info (IMGCTX ctx)
 		png_init_io (ctx->png_ptr, ctx->fd);
 		png_set_sig_bytes (ctx->png_ptr, 8); // We have read 8 bytes already to check PNG authenticity
 	}
+
+	// Silence 'incorrect sRGB profile' warning with libpng 1.6 +
+	#if defined(PNG_SKIP_sRGB_CHECK_PROFILE) && defined(PNG_SET_OPTION_SUPPORTED)       
+		png_set_option(ctx->png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE, PNG_OPTION_ON);        
+	#endif
 
 	// Read png header
 	png_read_info (ctx->png_ptr, ctx->info_ptr);
