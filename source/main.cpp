@@ -13,6 +13,8 @@
 #include "texture.hpp"
 #include "pngu.h"
 
+#define VERSION "Create Cache 0.2"
+
 extern "C" {
 extern void __exception_setreload(int t);
 }
@@ -308,7 +310,7 @@ int main(int argc, char **argv) {
 		while(!done)
 		{
 			printf("\x1b[2J");
-			printf("\x1b[3;1HCreate Cache v0.1\n");
+			printf("\x1b[3;1H%s\n", VERSION);
 			printf("\x1b[5;1HThis homebrew creates .wfc files for WiiFlow. (plugins only!)\n");
 			printf("\x1b[6;1HScanning the boxcovers and converting them take a long time.\n");
 
