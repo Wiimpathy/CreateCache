@@ -441,7 +441,6 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 	{
 		printf("ImageFromBuffer = 0!\n");
 		sprintf(buferror, "ImageFromBuffer = 0!\n");
-		sleep(1);
 		return TE_ERROR;
 	}
 	PNGUPROP imgProp;
@@ -449,7 +448,6 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 	{
 		printf("Can't get properties!\n");
 		sprintf(buferror, "Can't get properties!\n");
-		sleep(1);
 		PNGU_ReleaseImageContext(ctx);
 		return TE_ERROR;
 	}
@@ -457,7 +455,6 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 	{
 		printf("widht or height > 1090!\n");
 		sprintf(buferror, "widht or height > 1090!\n");
-		sleep(1);
 		PNGU_ReleaseImageContext(ctx);
 		return TE_ERROR;
 	}
@@ -489,7 +486,6 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 		{
 			printf("maxLODTmp > 0, malloc tmpdata2 Null 1st\n");
 			sprintf(buferror, "maxLODTmp > 0, malloc tmpdata2 Null 1st\n");
-			sleep(1);
 			PNGU_ReleaseImageContext(ctx);
 			return TE_NOMEM;
 		}
@@ -510,7 +506,6 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 			{
 				printf("dest.data malloc Null\n");
 				sprintf(buferror, "dest.data malloc Null\n");
-				sleep(1);
 				Cleanup(dest);
 				return TE_NOMEM;
 			}
@@ -529,7 +524,6 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 		{
 			printf("tmpdata2 _genMipMaps Null\n");
 			sprintf(buferror, "tmpdata2 _genMipMaps Null\n");
-			sleep(1);
 			Cleanup(dest);
 			return TE_NOMEM;
 		}
@@ -544,8 +538,6 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 		{
 			printf("minLODTmp > 0 dest.data Null\n");
 			sprintf(buferror, "minLODTmp > 0 dest.data Null\n");
-			sleep(1);
-
 			Cleanup(dest);
 			free(tmpData2);
 			return TE_NOMEM;
@@ -585,7 +577,6 @@ TexErr STexture::fromPNG(TexData &dest, const u8 *buffer, u8 f, u32 minMipSize, 
 		{
 			printf("maxLODTmp <= 0 est.data Null\n");
 			sprintf(buferror, "maxLODTmp <= 0 est.data Null\n");
-			sleep(1);
 			Cleanup(dest);
 			PNGU_ReleaseImageContext(ctx);
 			return TE_NOMEM;
